@@ -18,13 +18,10 @@ String Zumo<C>::generateReply(ZumoReply reply, int payload[], size_t size) {
   if (reply == ZumoReply::LINESENSOR)     { msg.concat("LS"); } else
   if (reply == ZumoReply::UNKNOWN)        { msg.concat("UK"); }
 
-  // Add separator
-  msg.concat('|');
-
   // Add payload
   for (unsigned int i = 0; i < size; i++) {
-    msg.concat(payload[i]);
     msg.concat('|');
+    msg.concat(payload[i]);
   }
 
   // Add linefeed
