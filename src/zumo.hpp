@@ -6,7 +6,7 @@
 #define ZUMO_DEBUG_SERIAL Serial
 
 enum class ZumoError {
-  MISSING_TAG,
+  UNKNOWN_ERROR,
   PARAMETER_IS_LESS_THAN_ZERO
 };
 
@@ -34,6 +34,7 @@ class Zumo {
     Zumo();
     // CONNECTION
     void parseCommand(String cmd);
+    void executeCommand(String tag, long int payloadData[], unsigned int payloadCount);
     void rebootMicrocontroller();
     bool connectBluetooth(String pin, String name, unsigned int baudrate);
     void eventLoop();

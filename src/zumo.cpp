@@ -37,10 +37,169 @@ String Zumo<C>::generateReply(ZumoReply reply, int payload[], size_t size) {
 
 template <class C>
 int Zumo<C>::generateErrorCode(ZumoError e) {
-  if (e == ZumoError::MISSING_TAG)                 { return 1; } else
+  if (e == ZumoError::UNKNOWN_ERROR)               { return 1; } else
   if (e == ZumoError::PARAMETER_IS_LESS_THAN_ZERO) { return 2; }
 }
 
+template <class C>
+void Zumo<C>::parseCommand(String cmd) {
+  String tag = cmd.substring(0, cmd.indexOf(cmd.indexOf('|') != -1 ? '|' : '\n'));
+
+  String payload = cmd.substring(cmd.indexOf('|') + 1); //Ignore first |
+  #ifdef ZUMO_DEBUG_SERIAL
+    ZUMO_DEBUG_SERIAL.print("Payload string: ");
+    ZUMO_DEBUG_SERIAL.println(payload);
+  #endif
+
+  unsigned int payloadCount = 0;
+  for ( unsigned int i = 0; i < cmd.length(); i++ )
+    if (cmd.charAt(i) == '|')
+      payloadCount++;
+
+  #ifdef ZUMO_DEBUG_SERIAL
+    ZUMO_DEBUG_SERIAL.print("Found ");
+    ZUMO_DEBUG_SERIAL.print(payloadCount);
+    ZUMO_DEBUG_SERIAL.println(" data segment/s");
+  #endif
+
+  long int payloadData[payloadCount];
+
+  #ifdef ZUMO_DEBUG_SERIAL
+    String payloadDebug[payloadCount];
+  #endif
+
+  for ( unsigned int i = 0; i < payloadCount; i++ ) {
+    if (payload.indexOf('|') == -1) {
+      payloadData[i] = payload.toInt();
+
+      #ifdef ZUMO_DEBUG_SERIAL
+        payloadDebug[i] = payload;
+      #endif
+    } else {
+      payloadData[i] = payload.substring(0, payload.indexOf('|')).toInt();
+
+      #ifdef ZUMO_DEBUG_SERIAL
+        payloadDebug[i] = payload.substring(0, payload.indexOf('|'));
+      #endif
+
+      payload = payload.substring(payload.indexOf('|') + 1);
+    }
+  }
+
+  #ifdef ZUMO_DEBUG_SERIAL
+    for ( unsigned int i = 0; i < payloadCount; i++ ) {
+      ZUMO_DEBUG_SERIAL.print("Payload[");
+      ZUMO_DEBUG_SERIAL.print(i);
+      ZUMO_DEBUG_SERIAL.print("] = ");
+      ZUMO_DEBUG_SERIAL.print(payloadData[i]);
+      ZUMO_DEBUG_SERIAL.print(" parsed from ");
+      ZUMO_DEBUG_SERIAL.println(payloadDebug[i]);
+    }
+  #endif
+
+  executeCommand(tag, payloadData, payloadCount);
+}
+
+template <class C>
+void Zumo<C>::executeCommand(String tag, long int payloadData[], unsigned int payloadCount) {
+  // Dispatch
+  if (tag.equals("PM")) {
+  } else if (tag.equals("BZ")) {
+    // Override too low frequencies
+    if (payloadData[0] < 31)
+      payloadData[0] = 31;
+    if (payloadData[1] <= 0) {
+      ZumoConnection.send(this->generateReply(ZumoReply::ERROR, generateErrorCode(ZumoError::PARAMETER_IS_LESS_THAN_ZERO), 1));
+    } else {
+      ZumoConnection.send(this->generateReply(ZumoReply::ACKNOWLEDGE, {}, 0));
+      unsigned int frequency = payloadData[0];
+      unsigned int duration = payloadData[1];
+      Zumo32U4Buzzer::playFrequency(frequency, duration, 15);
+    }
+  } else if (tag.equals("DF")) {
+    ZumoConnection.send(this->generateReply(ZumoReply::ACKNOWLEDGE, {}, 0));
+    Zumo32U4ProximitySensors sensors;
+    sensors.initThreeSensors();
+    sensors.read();
+    int readings[2] = { sensors.countsFrontWithLeftLeds(), sensors.countsFrontWithRightLeds() };
+    ZumoConnection.send(this->generateReply(ZumoReply::DISTANCE_FRONT, readings, 2));
+  } else if (tag.equals("DL")) {
+    ZumoConnection.send(this->generateReply(ZumoReply::ACKNOWLEDGE, {}, 0));
+    Zumo32U4ProximitySensors sensors;
+    sensors.initThreeSensors();
+    sensors.read();
+    int readings[2] = { sensors.countsLeftWithLeftLeds(), sensors.countsLeftWithRightLeds() };
+    ZumoConnection.send(this->generateReply(ZumoReply::DISTANCE_LEFT, readings, 2));
+  } else if (tag.equals("DR")) {
+    ZumoConnection.send(this->generateReply(ZumoReply::ACKNOWLEDGE, {}, 0));
+    Zumo32U4ProximitySensors sensors;
+    sensors.initThreeSensors();
+    sensors.read();
+    int readings[2] = { sensors.countsRightWithLeftLeds(), sensors.countsRightWithRightLeds() };
+    ZumoConnection.send(this->generateReply(ZumoReply::DISTANCE_RIGHT, readings, 2));
+  } else if (tag.equals("AC")) {
+    ZumoConnection.send(this->generateReply(ZumoReply::ACKNOWLEDGE, {}, 0));
+    LSM303 accelerometer;
+    accelerometer.init();
+    accelerometer.read();
+    int readings[6] = {
+      accelerometer.a.x,
+      accelerometer.a.y,
+      accelerometer.a.z
+    };
+    ZumoConnection.send(this->generateReply(ZumoReply::ACCELEROMETER, readings, 3));
+  } else if (tag.equals("GY")) {
+    ZumoConnection.send(this->generateReply(ZumoReply::ACKNOWLEDGE, {}, 0));
+    L3G gyro;
+    gyro.init();
+    gyro.read();
+    int readings[3] = {
+      gyro.g.x,
+      gyro.g.y,
+      gyro.g.z
+    };
+    ZumoConnection.send(this->generateReply(ZumoReply::GYROSCOPE, readings, 3));
+  } else if (tag.equals("CP")) {
+    ZumoConnection.send(this->generateReply(ZumoReply::ACKNOWLEDGE, {}, 0));
+    LSM303 accelerometer;
+    accelerometer.init();
+    accelerometer.read();
+    int bearing = int(accelerometer.heading());
+    ZumoConnection.send(this->generateReply(ZumoReply::COMPASS, &bearing, 1));
+  } else if (tag.equals("LS")) {
+    Zumo32U4LineSensors sensors;
+    sensors.initFiveSensors();
+    unsigned int readings[5];
+    sensors.read(readings);
+    int readingsInt[5] = {
+      int(readings[0]),
+      int(readings[1]),
+      int(readings[2]),
+      int(readings[3]),
+      int(readings[4]),
+    };
+    ZumoConnection.send(this->generateReply(ZumoReply::LINESENSOR, readingsInt, 5));
+  } else if (tag.equals("RM")) {
+    ZumoConnection.send(this->generateReply(ZumoReply::ACKNOWLEDGE, {}, 0));
+    this->rebootMicrocontroller();
+  } else if (tag.equals("BT")) {
+    ZumoConnection.send(this->generateReply(ZumoReply::ACKNOWLEDGE, {}, 0));
+    int battery[2] = {
+      int(readBatteryMillivolts()),
+      int(usbPowerPresent()),
+    };
+    ZumoConnection.send(this->generateReply(ZumoReply::BATTERY, battery, 2));
+  } else {
+    #ifdef ZUMO_DEBUG_SERIAL
+    ZUMO_DEBUG_SERIAL.print("Unknown tag ");
+    ZUMO_DEBUG_SERIAL.println(tag);
+    #endif
+
+    ZumoConnection.send(this->generateReply(ZumoReply::UNKNOWN, {}, 0));
+  }
+}
+
+/*
 template <class C>
 void Zumo<C>::parseCommand(String cmd) {
   // Parse the tag
@@ -203,6 +362,7 @@ void Zumo<C>::parseCommand(String cmd) {
     ZumoConnection.send(this->generateReply(ZumoReply::ERROR, generateErrorCode(ZumoError::MISSING_TAG), 1));
   }
 }
+*/
 
 template <class C>
 void Zumo<C>::rebootMicrocontroller() {
