@@ -39,6 +39,12 @@ String Zumo<C>::generateReply(ZumoReply reply, int payload[], size_t size) {
 }
 
 template <class C>
+int Zumo<C>::generateErrorCode(ZumoError e) {
+  if (e == ZumoError::MISSING_TAG)                 { return 1; } else
+  if (e == ZumoError::PARAMETER_IS_LESS_THAN_ZERO) { return 2; }
+}
+
+template <class C>
 void Zumo<C>::parseCommand(String cmd) {
   // Parse the tag
   if (cmd.indexOf('|') != -1) {
@@ -103,7 +109,7 @@ void Zumo<C>::parseCommand(String cmd) {
       if (payloadData[0] < 31)
         payloadData[0] = 31;
       if (payloadData[1] <= 0) {
-        ZumoConnection.send(this->generateReply(ZumoReply::ERROR, {}, 0));
+        ZumoConnection.send(this->generateReply(ZumoReply::ERROR, generateErrorCode(ZumoError::PARAMETER_IS_LESS_THAN_ZERO), 1));
       } else {
         ZumoConnection.send(this->generateReply(ZumoReply::ACKNOWLEDGE, {}, 0));
         unsigned int frequency = payloadData[0];
@@ -197,7 +203,7 @@ void Zumo<C>::parseCommand(String cmd) {
     ZUMO_DEBUG_SERIAL.println("No separator was present in the message");
     #endif
 
-    ZumoConnection.send(this->generateReply(ZumoReply::ERROR, {}, 0));
+    ZumoConnection.send(this->generateReply(ZumoReply::ERROR, generateErrorCode(ZumoError::MISSING_TAG), 1));
   }
 }
 

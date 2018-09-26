@@ -5,6 +5,11 @@
 // Comment out to disable debugging
 #define ZUMO_DEBUG_SERIAL Serial
 
+enum class ZumoError {
+  MISSING_TAG,
+  PARAMETER_IS_LESS_THAN_ZERO
+};
+
 enum class ZumoReply {
   ACCELEROMETER,
   ACKNOWLEDGE,
@@ -23,6 +28,7 @@ template <class C>
 class Zumo {
   private:
     String generateReply(ZumoReply reply, int payload[], size_t size);
+    int generateErrorCode(ZumoError e);
     C ZumoConnection;
   public:
     Zumo();
