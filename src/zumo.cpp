@@ -139,12 +139,9 @@ void Zumo<C>::parseCommand(String cmd) {
       int readings[6] = {
         accelerometer.a.x,
         accelerometer.a.y,
-        accelerometer.a.z,
-        accelerometer.m.x,
-        accelerometer.m.y,
-        accelerometer.m.z,
+        accelerometer.a.z
       };
-      ZumoConnection.send(this->generateReply(ZumoReply::ACCELEROMETER, readings, 6));
+      ZumoConnection.send(this->generateReply(ZumoReply::ACCELEROMETER, readings, 3));
     } else if (tag.equals("GY")) {
       ZumoConnection.send(this->generateReply(ZumoReply::ACKNOWLEDGE, {}, 0));
       L3G gyro;
