@@ -21,6 +21,7 @@ enum class ZumoReply {
   ERROR,
   GYROSCOPE,
   LINESENSOR,
+  BUZZER,
   UNKNOWN,
 };
 
