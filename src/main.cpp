@@ -1,14 +1,14 @@
 #include <Arduino.h>
 
-#include "hc06.hpp"
+#include "esp32bt.hpp"
 #include "zumo.cpp"
 
-Zumo<HC06> Robot;
+Zumo<ESP32BT> Robot;
 
 void setup() {
     // put your setup code here, to run once:
     Serial.begin(9600);
-    Robot.connectBluetooth("1234", "sminotti", 9600);
+    Robot.connectBluetooth("1234", "Zumo", 9600);
 }
 
 void loop() {

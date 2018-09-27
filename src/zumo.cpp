@@ -7,7 +7,7 @@ String Zumo<C>::generateReply(ZumoReply reply, int payload[], size_t size) {
   
   // Set tag
   if (reply == ZumoReply::ACCELEROMETER)  { msg.concat("AC"); } else
-  if (reply == ZumoReply::ACKNOWLEDGE)    { msg.concat("AC"); } else
+  if (reply == ZumoReply::ACKNOWLEDGE)    { msg.concat("ACK"); } else
   if (reply == ZumoReply::BATTERY)        { msg.concat("BT"); } else
   if (reply == ZumoReply::COMPASS)        { msg.concat("CP"); } else
   if (reply == ZumoReply::DISTANCE_FRONT) { msg.concat("DF"); } else
@@ -43,6 +43,9 @@ int Zumo<C>::generateErrorCode(ZumoError e) {
 
 template <class C>
 void Zumo<C>::parseCommand(String cmd) {
+  if (cmd.indexOf('\r') != -1)
+    cmd.remove(cmd.indexOf('\r'));
+  
   String tag = cmd.substring(0, cmd.indexOf(cmd.indexOf('|') != -1 ? '|' : '\n'));
 
   String payload = cmd.substring(cmd.indexOf('|') + 1); //Ignore first |
