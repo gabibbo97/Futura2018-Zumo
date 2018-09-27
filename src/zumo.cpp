@@ -16,6 +16,7 @@ String Zumo<C>::generateReply(ZumoReply reply, int payload[], size_t size) {
   if (reply == ZumoReply::ERROR)          { msg.concat("ER"); } else
   if (reply == ZumoReply::GYROSCOPE)      { msg.concat("GY"); } else
   if (reply == ZumoReply::LINESENSOR)     { msg.concat("LS"); } else
+  if (reply == ZumoReply::BUZZER)         { msg.concat("BZ"); } else
   if (reply == ZumoReply::UNKNOWN)        { msg.concat("UK"); }
 
   // Add payload
@@ -118,6 +119,7 @@ void Zumo<C>::executeCommand(String tag, long int payloadData[], unsigned int pa
       unsigned int frequency = payloadData[0];
       unsigned int duration = payloadData[1];
       Zumo32U4Buzzer::playFrequency(frequency, duration, 15);
+      ZumoConnection.send(this->generateReply(ZumoReply::BUZZER, {}, 0));
     }
   } else if (tag.equals("DF")) {
     ZumoConnection.send(this->generateReply(ZumoReply::ACKNOWLEDGE, {}, 0));
