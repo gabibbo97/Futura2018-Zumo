@@ -119,6 +119,7 @@ void Zumo<C>::executeCommand(String tag, long int payloadData[], unsigned int pa
       unsigned int frequency = payloadData[0];
       unsigned int duration = payloadData[1];
       Zumo32U4Buzzer::playFrequency(frequency, duration, 15);
+      delay(duration);
       ZumoConnection.send(this->generateReply(ZumoReply::BUZZER, {}, 0));
     }
   } else if (tag.equals("DF")) {
