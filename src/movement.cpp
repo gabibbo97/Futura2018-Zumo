@@ -1,7 +1,7 @@
 #include <Zumo32U4.h>
 #include <PID_v1.h>
 
-#include "Movement.hpp"
+#include "movement.hpp"
 
 Movement::Movement () {
   this->pPID = new PID(&(this->Input), &(this->Output), &(this->Setpoint), 0.8,0.7,0.05, DIRECT);
@@ -28,11 +28,26 @@ void Movement::forward (int power) {
   //Used for InfiniteMovement, manuale trigger of update
 }
 
-void Movement::move (int distance, float speed) {
+void Movement::move (int distance, int speed) {
+  if (distance < 0) {
+    distance = -distance;
+    speed = -speed;
+  }
+
   this->power = speed;
 
+  int encDistance = distance*75;
+
   while (true) {
-    update();
+    this->update();
+    if ((this->encLeft+this->encRight)/2 > encDistance)
+      break;
     delay(100);
   }
+
+  this->stop();
+}
+
+void Movement::stop () {
+  this->motors.setSpeeds(0, 0);
 }

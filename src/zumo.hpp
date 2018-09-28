@@ -1,3 +1,5 @@
+#pragma once
+
 #include <Arduino.h>
 
 #include <Wire.h>
@@ -5,6 +7,9 @@
 
 // Comment out to disable debugging
 #define ZUMO_DEBUG_SERIAL Serial
+
+#include <movement.hpp>
+#include <rotation.hpp>
 
 enum class ZumoError {
   UNKNOWN_ERROR,
@@ -39,6 +44,8 @@ class Zumo {
     Zumo32U4LineSensors line_sensors;
     LSM303 accelerometer;
     L3G gyro;
+    Movement movement;
+    Rotation rotation;
   public:
     Zumo();
     // CONNECTION

@@ -17,6 +17,7 @@ String Zumo<C>::generateReply(ZumoReply reply, int payload[], size_t size) {
   if (reply == ZumoReply::GYROSCOPE)      { msg.concat("GY");  } else
   if (reply == ZumoReply::LINESENSOR)     { msg.concat("LS");  } else
   if (reply == ZumoReply::BUZZER)         { msg.concat("BZ");  } else
+  if (reply == ZumoReply::MOVE_END)       { msg.concat("ME");  } else
   if (reply == ZumoReply::UNKNOWN)        { msg.concat("UK");  }
 
   // Add payload
@@ -106,11 +107,16 @@ void Zumo<C>::parseCommand(String cmd) {
 }
 
 template <class C>
-void Zumo<C>::executeCommand(String tag, long int payloadData[], unsigned int payloadCount) {
+void Zumo<C>::executeCommand (String tag, long int payloadData[], unsigned int payloadCount) {
   // Dispatch
   if (tag.equals("PM")) {
-    this->motors.setLeftSpeed(100);
-    this->motors.setRightSpeed(100);
+    ZumoConnection.send(this->generateReply(ZumoReply::ACKNOWLEDGE, {}, 0));
+    this->movement.move(payloadData[0], payloadData[1]);
+    ZumoConnection.send(this->generateReply(ZumoReply::MOVE_END, {}, 0));
+  } else if (tag.equals("PR")) {
+    ZumoConnection.send(this->generateReply(ZumoReply::ACKNOWLEDGE, {}, 0));
+    this->rotation.rotate(payloadData[0], payloadData[1]);
+    ZumoConnection.send(this->generateReply(ZumoReply::MOVE_END, {}, 0));
   } else if (tag.equals("BZ")) {
     // Check arguments
     if (payloadCount < 2) {

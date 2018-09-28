@@ -1,3 +1,5 @@
+#pragma once
+
 #include <Zumo32U4.h>
 #include <PID_v1.h>
 
@@ -14,5 +16,6 @@ class Movement {
   Movement ();
   void update ();
   void forward (int power);
-  void move (int distance, float speed);
+  void move (int distance, int speed);
+  void stop ();
 };
