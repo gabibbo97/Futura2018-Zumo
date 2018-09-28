@@ -8,7 +8,6 @@ Zumo<ESP32BT>* Robot;
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600);
   Robot = new Zumo<ESP32BT>();
   Robot->connectBluetooth("1234", "Zumo", 9600);
 }

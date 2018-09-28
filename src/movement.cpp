@@ -1,27 +1,35 @@
+#include <Wire.h>
 #include <Zumo32U4.h>
 #include <PID_v1.h>
 
 #include "movement.hpp"
 
 Movement::Movement () {
-  this->pPID = new PID(&(this->Input), &(this->Output), &(this->Setpoint), 0.8,0.7,0.05, DIRECT);
+}
+
+void Movement::reset () {
+  this->pPID = new PID(&(this->Input), &(this->Output), &(this->Setpoint), 0.05,0.01,0.03, DIRECT);
   this->pPID->SetMode(AUTOMATIC);
   this->pPID->SetOutputLimits(-20, 20);
+  
+  this->encoders.getCountsAndResetLeft();
+  this->encoders.getCountsAndResetRight();
 }
 
 void Movement::update () {
   int16_t countsLeft = this->encoders.getCountsLeft();
   int16_t countsRight = this->encoders.getCountsRight();
 
-  this->Input = (countsLeft - this->encLeft) - (countsRight - this->encRight);
+  this->Input = (countsRight - this->encLeft) - (countsLeft - this->encRight);
 
+  this->Setpoint = 0;
   this->pPID->Compute();
 
   this->encLeft = countsLeft;
   this->encRight = countsRight;
 
-  this->motors.setLeftSpeed(this->power + Output);
-  this->motors.setRightSpeed(this->power);
+  this->motors.setLeftSpeed(this->power - Output/2);
+  this->motors.setRightSpeed(this->power + Output/2 + (int)((int)Output^2)/400);
 }
 
 void Movement::forward (int power) {
@@ -29,20 +37,27 @@ void Movement::forward (int power) {
 }
 
 void Movement::move (int distance, int speed) {
+  this->reset();
+
   if (distance < 0) {
     distance = -distance;
     speed = -speed;
   }
 
-  this->power = speed;
+  this->motors.setSpeeds(speed, speed);
+  delay(25);
 
   int encDistance = distance*75;
 
+  this->power = speed;
+
   while (true) {
     this->update();
-    if ((this->encLeft+this->encRight)/2 > encDistance)
+    if (speed > 0 && (this->encLeft+this->encRight)/2 > encDistance)
       break;
-    delay(100);
+    if (speed < 0 && (this->encLeft+this->encRight)/2 < -encDistance)
+      break;
+    delay(200);
   }
 
   this->stop();

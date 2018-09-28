@@ -4,7 +4,6 @@
 
 class Rotation {
   private:
-  int power;
   float angle = 0;
   Zumo32U4Motors motors;
   L3G gyro;

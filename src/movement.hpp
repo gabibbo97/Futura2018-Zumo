@@ -6,7 +6,7 @@
 class Movement {
   private:
   int power;
-  double Input, Output, Setpoint;
+  double Input, Output, Setpoint = 0;
   Zumo32U4Motors motors;
   Zumo32U4Encoders encoders;
   int16_t encLeft = 0, encRight = 0;
@@ -14,6 +14,7 @@ class Movement {
 
   public:
   Movement ();
+  void reset ();
   void update ();
   void forward (int power);
   void move (int distance, int speed);
