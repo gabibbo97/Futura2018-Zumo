@@ -1,7 +1,12 @@
 #include <Arduino.h>
 
 #include "esp32bt.hpp"
-#include "zumo.cpp"
+#include "zumo.hpp"
+
+#include <Zumo32U4.h>
+
+#include "movement.hpp"
+
 
 Zumo<ESP32BT> Robot;
 
@@ -14,4 +19,14 @@ void setup() {
 void loop() {
     // put your main code here, to run repeatedly:
     Robot.eventLoop();
+}
+
+Movement m;
+
+void setup() {
+
+}
+
+void loop() {
+  m.move(123, 200);
 }

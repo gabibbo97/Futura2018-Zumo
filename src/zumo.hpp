@@ -1,6 +1,7 @@
 #include <Arduino.h>
 
 #include <Wire.h>
+#include <Zumo32U4.h>
 
 // Comment out to disable debugging
 #define ZUMO_DEBUG_SERIAL Serial
@@ -23,6 +24,7 @@ enum class ZumoReply {
   GYROSCOPE,
   LINESENSOR,
   BUZZER,
+  MOVE_END,
   UNKNOWN,
 };
 
@@ -32,6 +34,11 @@ class Zumo {
     String generateReply(ZumoReply reply, int payload[], size_t size);
     int generateErrorCode(ZumoError e);
     C ZumoConnection;
+    Zumo32U4Motors motors;
+    Zumo32U4ProximitySensors proximity_sensors;
+    Zumo32U4LineSensors line_sensors;
+    LSM303 accelerometer;
+    L3G gyro;
   public:
     Zumo();
     // CONNECTION
@@ -42,7 +49,7 @@ class Zumo {
     void eventLoop();
     // MOVEMENT
     // SENSORS
-
+    void init();
 };
 
 template <class C>

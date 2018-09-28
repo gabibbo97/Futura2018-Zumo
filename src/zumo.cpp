@@ -29,8 +29,8 @@ String Zumo<C>::generateReply(ZumoReply reply, int payload[], size_t size) {
   msg.concat('\n');
 
   #ifdef ZUMO_DEBUG_SERIAL
-  ZUMO_DEBUG_SERIAL.print("Crafted message: ");
-  ZUMO_DEBUG_SERIAL.print(msg);
+    ZUMO_DEBUG_SERIAL.print("Crafted message: ");
+    ZUMO_DEBUG_SERIAL.print(msg);
   #endif
 
   return msg;
@@ -109,6 +109,8 @@ template <class C>
 void Zumo<C>::executeCommand(String tag, long int payloadData[], unsigned int payloadCount) {
   // Dispatch
   if (tag.equals("PM")) {
+    this->motors.setLeftSpeed(100);
+    this->motors.setRightSpeed(100);
   } else if (tag.equals("BZ")) {
     // Check arguments
     if (payloadCount < 2) {
@@ -130,59 +132,45 @@ void Zumo<C>::executeCommand(String tag, long int payloadData[], unsigned int pa
     }
   } else if (tag.equals("DF")) {
     ZumoConnection.send(this->generateReply(ZumoReply::ACKNOWLEDGE, {}, 0));
-    Zumo32U4ProximitySensors sensors;
-    sensors.initThreeSensors();
-    sensors.read();
-    int readings[2] = { sensors.countsFrontWithLeftLeds(), sensors.countsFrontWithRightLeds() };
+    this->proximity_sensors.read();
+    int readings[2] = { this->proximity_sensors.countsFrontWithLeftLeds(), this->proximity_sensors.countsFrontWithRightLeds() };
     ZumoConnection.send(this->generateReply(ZumoReply::DISTANCE_FRONT, readings, 2));
   } else if (tag.equals("DL")) {
     ZumoConnection.send(this->generateReply(ZumoReply::ACKNOWLEDGE, {}, 0));
-    Zumo32U4ProximitySensors sensors;
-    sensors.initThreeSensors();
-    sensors.read();
-    int readings[2] = { sensors.countsLeftWithLeftLeds(), sensors.countsLeftWithRightLeds() };
+    this->proximity_sensors.read();
+    int readings[2] = { this->proximity_sensors.countsLeftWithLeftLeds(), this->proximity_sensors.countsLeftWithRightLeds() };
     ZumoConnection.send(this->generateReply(ZumoReply::DISTANCE_LEFT, readings, 2));
   } else if (tag.equals("DR")) {
     ZumoConnection.send(this->generateReply(ZumoReply::ACKNOWLEDGE, {}, 0));
-    Zumo32U4ProximitySensors sensors;
-    sensors.initThreeSensors();
-    sensors.read();
-    int readings[2] = { sensors.countsRightWithLeftLeds(), sensors.countsRightWithRightLeds() };
+    this->proximity_sensors.read();
+    int readings[2] = { this->proximity_sensors.countsRightWithLeftLeds(), this->proximity_sensors.countsRightWithRightLeds() };
     ZumoConnection.send(this->generateReply(ZumoReply::DISTANCE_RIGHT, readings, 2));
   } else if (tag.equals("AC")) {
     ZumoConnection.send(this->generateReply(ZumoReply::ACKNOWLEDGE, {}, 0));
-    LSM303 accelerometer;
-    accelerometer.init();
-    accelerometer.read();
+    this->accelerometer.read();
     int readings[6] = {
-      accelerometer.a.x,
-      accelerometer.a.y,
-      accelerometer.a.z
+      this->accelerometer.a.x,
+      this->accelerometer.a.y,
+      this->accelerometer.a.z
     };
     ZumoConnection.send(this->generateReply(ZumoReply::ACCELEROMETER, readings, 3));
   } else if (tag.equals("GY")) {
     ZumoConnection.send(this->generateReply(ZumoReply::ACKNOWLEDGE, {}, 0));
-    L3G gyro;
-    gyro.init();
-    gyro.read();
+    this->gyro.read();
     int readings[3] = {
-      gyro.g.x,
-      gyro.g.y,
-      gyro.g.z
+      this->gyro.g.x,
+      this->gyro.g.y,
+      this->gyro.g.z
     };
     ZumoConnection.send(this->generateReply(ZumoReply::GYROSCOPE, readings, 3));
   } else if (tag.equals("CP")) {
     ZumoConnection.send(this->generateReply(ZumoReply::ACKNOWLEDGE, {}, 0));
-    LSM303 accelerometer;
-    accelerometer.init();
-    accelerometer.read();
-    int bearing = int(accelerometer.heading());
+    this->accelerometer.read();
+    int bearing = int(this->accelerometer.heading());
     ZumoConnection.send(this->generateReply(ZumoReply::COMPASS, &bearing, 1));
   } else if (tag.equals("LS")) {
-    Zumo32U4LineSensors sensors;
-    sensors.initFiveSensors();
     unsigned int readings[5];
-    sensors.read(readings);
+    this->line_sensors.read(readings);
     int readingsInt[5] = {
       int(readings[0]),
       int(readings[1]),
@@ -203,8 +191,8 @@ void Zumo<C>::executeCommand(String tag, long int payloadData[], unsigned int pa
     ZumoConnection.send(this->generateReply(ZumoReply::BATTERY, battery, 2));
   } else {
     #ifdef ZUMO_DEBUG_SERIAL
-    ZUMO_DEBUG_SERIAL.print("Unknown tag ");
-    ZUMO_DEBUG_SERIAL.println(tag);
+      ZUMO_DEBUG_SERIAL.print("Unknown tag ");
+      ZUMO_DEBUG_SERIAL.println(tag);
     #endif
 
     ZumoConnection.send(this->generateReply(ZumoReply::UNKNOWN, {}, 0));
@@ -375,6 +363,16 @@ void Zumo<C>::parseCommand(String cmd) {
   }
 }
 */
+
+template <class C>
+void Zumo<C>::init() {
+  Wire.begin();
+  this->proximity_sensors.initThreeSensors();
+  this->line_sensors.initThreeSensors();
+  this->accelerometer.init();
+  this->accelerometer.enableDefault();
+  this->gyro.init();
+}
 
 template <class C>
 void Zumo<C>::rebootMicrocontroller() {
