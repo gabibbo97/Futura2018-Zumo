@@ -7,7 +7,8 @@
 
 enum class ZumoError {
   UNKNOWN_ERROR,
-  PARAMETER_IS_LESS_THAN_ZERO
+  PARAMETER_IS_LESS_THAN_ZERO,
+  NOT_ENOUGH_ARGUMENTS
 };
 
 enum class ZumoReply {

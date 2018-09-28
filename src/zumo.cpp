@@ -6,18 +6,18 @@ String Zumo<C>::generateReply(ZumoReply reply, int payload[], size_t size) {
   String msg;
   
   // Set tag
-  if (reply == ZumoReply::ACCELEROMETER)  { msg.concat("AC"); } else
+  if (reply == ZumoReply::ACCELEROMETER)  { msg.concat("AC");  } else
   if (reply == ZumoReply::ACKNOWLEDGE)    { msg.concat("ACK"); } else
-  if (reply == ZumoReply::BATTERY)        { msg.concat("BT"); } else
-  if (reply == ZumoReply::COMPASS)        { msg.concat("CP"); } else
-  if (reply == ZumoReply::DISTANCE_FRONT) { msg.concat("DF"); } else
-  if (reply == ZumoReply::DISTANCE_LEFT)  { msg.concat("DL"); } else
-  if (reply == ZumoReply::DISTANCE_RIGHT) { msg.concat("DR"); } else
-  if (reply == ZumoReply::ERROR)          { msg.concat("ER"); } else
-  if (reply == ZumoReply::GYROSCOPE)      { msg.concat("GY"); } else
-  if (reply == ZumoReply::LINESENSOR)     { msg.concat("LS"); } else
-  if (reply == ZumoReply::BUZZER)         { msg.concat("BZ"); } else
-  if (reply == ZumoReply::UNKNOWN)        { msg.concat("UK"); }
+  if (reply == ZumoReply::BATTERY)        { msg.concat("BT");  } else
+  if (reply == ZumoReply::COMPASS)        { msg.concat("CP");  } else
+  if (reply == ZumoReply::DISTANCE_FRONT) { msg.concat("DF");  } else
+  if (reply == ZumoReply::DISTANCE_LEFT)  { msg.concat("DL");  } else
+  if (reply == ZumoReply::DISTANCE_RIGHT) { msg.concat("DR");  } else
+  if (reply == ZumoReply::ERROR)          { msg.concat("ER");  } else
+  if (reply == ZumoReply::GYROSCOPE)      { msg.concat("GY");  } else
+  if (reply == ZumoReply::LINESENSOR)     { msg.concat("LS");  } else
+  if (reply == ZumoReply::BUZZER)         { msg.concat("BZ");  } else
+  if (reply == ZumoReply::UNKNOWN)        { msg.concat("UK");  }
 
   // Add payload
   for (unsigned int i = 0; i < size; i++) {
@@ -39,7 +39,8 @@ String Zumo<C>::generateReply(ZumoReply reply, int payload[], size_t size) {
 template <class C>
 int Zumo<C>::generateErrorCode(ZumoError e) {
   if (e == ZumoError::UNKNOWN_ERROR)               { return 1; } else
-  if (e == ZumoError::PARAMETER_IS_LESS_THAN_ZERO) { return 2; }
+  if (e == ZumoError::PARAMETER_IS_LESS_THAN_ZERO) { return 2; } else
+  if (e == ZumoError::NOT_ENOUGH_ARGUMENTS)        { return 3; }
 }
 
 template <class C>
@@ -109,6 +110,11 @@ void Zumo<C>::executeCommand(String tag, long int payloadData[], unsigned int pa
   // Dispatch
   if (tag.equals("PM")) {
   } else if (tag.equals("BZ")) {
+    // Check arguments
+    if (payloadCount < 2) {
+      ZumoConnection.send(this->generateReply(ZumoReply::ERROR, generateErrorCode(ZumoError::NOT_ENOUGH_ARGUMENTS), 1));
+      return;
+    }
     // Override too low frequencies
     if (payloadData[0] < 31)
       payloadData[0] = 31;
