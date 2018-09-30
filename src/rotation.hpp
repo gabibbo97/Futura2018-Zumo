@@ -16,6 +16,8 @@ class Rotation {
   public:
   Rotation ();
   void update ();
+  void counterclockwise (int speed);
+  void clockwise (int speed);
   void reset ();
   void rotate (int angle, int speed);
   void stop ();

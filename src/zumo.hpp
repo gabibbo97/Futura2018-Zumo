@@ -46,6 +46,7 @@ class Zumo {
     L3G gyro;
     Movement movement;
     Rotation rotation;
+    void checkSpeed (long int &speed);
   public:
     Zumo();
     // CONNECTION

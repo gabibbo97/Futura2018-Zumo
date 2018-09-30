@@ -107,16 +107,45 @@ void Zumo<C>::parseCommand(String cmd) {
 }
 
 template <class C>
+void Zumo<C>::checkSpeed (long int &speed) {
+  if (speed < 50)
+    speed = 50;
+  else if (speed > 380)
+    speed = 380;
+}
+
+template <class C>
 void Zumo<C>::executeCommand (String tag, long int payloadData[], unsigned int payloadCount) {
   // Dispatch
   if (tag.equals("PM")) {
     ZumoConnection.send(this->generateReply(ZumoReply::ACKNOWLEDGE, {}, 0));
+    checkSpeed(payloadData[1]);
     this->movement.move(payloadData[0], payloadData[1]);
     ZumoConnection.send(this->generateReply(ZumoReply::MOVE_END, {}, 0));
+  } else if (tag.equals("MF")) {
+    ZumoConnection.send(this->generateReply(ZumoReply::ACKNOWLEDGE, {}, 0));
+    checkSpeed(payloadData[0]);
+    this->movement.forward(payloadData[0]);
+  } else if (tag.equals("MB")) {
+    ZumoConnection.send(this->generateReply(ZumoReply::ACKNOWLEDGE, {}, 0));
+    checkSpeed(payloadData[0]);
+    this->movement.backward(payloadData[0]);
+  } else if (tag.equals("SS")) {
+    ZumoConnection.send(this->generateReply(ZumoReply::ACKNOWLEDGE, {}, 0));
+    this->movement.stop();
   } else if (tag.equals("PR")) {
     ZumoConnection.send(this->generateReply(ZumoReply::ACKNOWLEDGE, {}, 0));
+    checkSpeed(payloadData[1]);
     this->rotation.rotate(payloadData[0], payloadData[1]);
     ZumoConnection.send(this->generateReply(ZumoReply::MOVE_END, {}, 0));
+  } else if (tag.equals("RL")) {
+    ZumoConnection.send(this->generateReply(ZumoReply::ACKNOWLEDGE, {}, 0));
+    checkSpeed(payloadData[0]);
+    this->rotation.counterclockwise(payloadData[0]);
+  } else if (tag.equals("RR")) {
+    ZumoConnection.send(this->generateReply(ZumoReply::ACKNOWLEDGE, {}, 0));
+    checkSpeed(payloadData[0]);
+    this->rotation.clockwise(payloadData[0]);
   } else if (tag.equals("BZ")) {
     // Check arguments
     if (payloadCount < 2) {
@@ -175,16 +204,14 @@ void Zumo<C>::executeCommand (String tag, long int payloadData[], unsigned int p
     int bearing = int(this->accelerometer.heading());
     ZumoConnection.send(this->generateReply(ZumoReply::COMPASS, &bearing, 1));
   } else if (tag.equals("LS")) {
-    unsigned int readings[5];
+    unsigned int readings[3];
     this->line_sensors.read(readings);
-    int readingsInt[5] = {
+    int readingsInt[3] = {
       int(readings[0]),
       int(readings[1]),
-      int(readings[2]),
-      int(readings[3]),
-      int(readings[4]),
+      int(readings[2])
     };
-    ZumoConnection.send(this->generateReply(ZumoReply::LINESENSOR, readingsInt, 5));
+    ZumoConnection.send(this->generateReply(ZumoReply::LINESENSOR, readingsInt, 3));
   } else if (tag.equals("RM")) {
     ZumoConnection.send(this->generateReply(ZumoReply::ACKNOWLEDGE, {}, 0));
     this->rebootMicrocontroller();
@@ -393,6 +420,10 @@ void Zumo<C>::eventLoop() {
     this->parseCommand(ZumoConnection.readLine());
     ledYellow(false);
   }
+
+  this->movement.update();
+
+  delay(100);
 }
 
 template <class C>

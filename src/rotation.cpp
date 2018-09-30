@@ -33,6 +33,18 @@ void Rotation::reset () {
   this->angle = 0;
 }
 
+void Rotation::counterclockwise (int speed) {
+  this->reset();
+
+  this->motors.setSpeeds(-speed, speed);
+}
+
+void Rotation::clockwise (int speed) {
+  this->reset();
+  
+  this->motors.setSpeeds(speed, -speed);
+}
+
 void Rotation::update () {
   this->gyro.read();
   this->turnRate = this->gyro.g.z - this->gyroOffset;
@@ -52,8 +64,7 @@ void Rotation::rotate (int angle, int speed) {
     speed = -speed;
   }
 
-  this->motors.setLeftSpeed(speed);
-  this->motors.setRightSpeed(-speed);
+  this->motors.setSpeeds(speed, -speed);
 
   while (true) {
     this->update();
