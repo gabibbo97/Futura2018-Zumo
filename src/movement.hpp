@@ -10,7 +10,7 @@ class Movement {
   Zumo32U4Motors motors;
   Zumo32U4Encoders encoders;
   int16_t encLeft = 0, encRight = 0;
-  PID* pPID;
+  PID* pPID = 0;
 
   public:
   Movement ();

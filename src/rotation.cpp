@@ -58,6 +58,7 @@ void Rotation::update () {
 }
 
 void Rotation::rotate (int angle, int speed) {
+  //angle = angle - (speed/25);
   this->reset();
 
   if (angle < 0) {
@@ -68,9 +69,9 @@ void Rotation::rotate (int angle, int speed) {
 
   while (true) {
     this->update();
-    if (angle < 0 && (int32_t)this->angle < angle)
+    if (angle < 0 && this->angle < (float)angle)
       break;
-    if (angle > 0 && (int32_t)this->angle > angle)
+    if (angle > 0 && this->angle > (float)angle)
       break;
   }
 

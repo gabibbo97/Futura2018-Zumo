@@ -8,8 +8,9 @@
 // Comment out to disable debugging
 #define ZUMO_DEBUG_SERIAL Serial
 
-#include <movement.hpp>
-#include <rotation.hpp>
+#include "movement.hpp"
+#include "rotation.hpp"
+#include "hcsr04.hpp"
 
 enum class ZumoError {
   UNKNOWN_ERROR,
@@ -40,24 +41,26 @@ class Zumo {
     int generateErrorCode(ZumoError e);
     C ZumoConnection;
     Zumo32U4Motors motors;
-    Zumo32U4ProximitySensors proximity_sensors;
+    //Zumo32U4ProximitySensors proximity_sensors;
     Zumo32U4LineSensors line_sensors;
     LSM303 accelerometer;
     L3G gyro;
     Movement movement;
     Rotation rotation;
+    HCSR04 distance;
     void checkSpeed (long int &speed);
   public:
     Zumo();
     // CONNECTION
-    void parseCommand(String cmd);
-    void executeCommand(String tag, long int payloadData[], unsigned int payloadCount);
-    void rebootMicrocontroller();
-    bool connectBluetooth(String pin, String name, unsigned int baudrate);
-    void eventLoop();
+    void parseCommand (String cmd);
+    void executeCommand (String tag, long int payloadData[], unsigned int payloadCount);
+    void rebootMicrocontroller ();
+    bool connectBluetooth (String pin, String name, unsigned int baudrate);
+    void eventLoop ();
     // MOVEMENT
+    void stop ();
     // SENSORS
-    void init();
+    void init ();
 };
 
 template <class C>

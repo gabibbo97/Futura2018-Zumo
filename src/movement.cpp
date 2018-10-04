@@ -8,8 +8,12 @@ Movement::Movement () {
 }
 
 void Movement::reset () {
+  if (this->pPID != NULL)
+    free(this->pPID);
+  
   this->stop();
   this->pPID = new PID(&(this->Input), &(this->Output), &(this->Setpoint), 0.05,0.03,0.03, DIRECT);
+
   this->pPID->SetMode(AUTOMATIC);
   this->pPID->SetOutputLimits(-20, 20);
   
